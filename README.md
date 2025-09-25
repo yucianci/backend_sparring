@@ -1,4 +1,4 @@
-# Backend Sparring
+# Aviation AI API - Sparring
 
 Backend Sparring é uma API GraphQL construída com Node.js e NestJS que utiliza TypeScript, Prisma ORM e PostgreSQL para oferecer uma base sólida de gestão de organizações aeronáuticas fictícias. O projeto foi pensado para servir como material de estudo e experimentação, demonstrando boas práticas de arquitetura, camadas bem definidas e integração com um banco relacional moderno.
 
@@ -8,6 +8,9 @@ Backend Sparring é uma API GraphQL construída com Node.js e NestJS que utiliza
 - **ORM**: Prisma Client, responsável pelo acesso ao banco PostgreSQL e pela geração de tipos fortemente tipados.
 - **Banco de dados**: PostgreSQL, definido através do arquivo `prisma/schema.prisma` e configurado via variável `DATABASE_URL`.
 - **Domínio principal**: CRUD completo para entidades de **Organização**, incluindo campos de métricas operacionais e observações.
+
+## Deploy e Produção
+API em produção: http://54.164.151.205:3000/graphql
 
 ## Arquitetura e Organização do Código
 A estrutura segue os princípios modulares do NestJS:
@@ -28,13 +31,6 @@ src/
 ## Modelo de Dados
 O arquivo [`prisma/schema.prisma`](prisma/schema.prisma) descreve a tabela `organizations`, incluindo colunas auxiliares de auditoria (`createdAt`, `updatedAt`, `deletedAt`). Sempre que o schema é alterado, basta rodar `npx prisma migrate dev --name <descricao>` para gerar e aplicar migrações.
 
-### Variáveis de Ambiente Obrigatórias
-Crie um arquivo `.env` na raiz do projeto com a string de conexão do banco:
-
-```dotenv
-DATABASE_URL="postgresql://usuario:senha@localhost:5432/backend_sparring?schema=public"
-```
-
 ## Pré-requisitos
 - Node.js 18 ou superior
 - npm 9 ou superior (ou outro gerenciador compatível, como pnpm ou yarn)
@@ -53,7 +49,6 @@ DATABASE_URL="postgresql://usuario:senha@localhost:5432/backend_sparring?schema=
    ```bash
    npx prisma migrate dev
    ```
-4. **(Opcional) Popular o banco** – ajuste `prisma/seed.ts` (quando existir) e rode `npx prisma db seed`.
 
 ## Executando a Aplicação
 - **Modo desenvolvimento (hot reload)**
@@ -133,43 +128,3 @@ mutation DeleteOrganization {
   }
 }
 ```
-
-## Testes e Qualidade
-O projeto já vem configurado com Jest, ESLint e Prettier. Utilize os scripts abaixo:
-
-- **Testes unitários**
-  ```bash
-  npm run test
-  ```
-- **Cobertura de testes**
-  ```bash
-  npm run test:cov
-  ```
-- **Testes end-to-end**
-  ```bash
-  npm run test:e2e
-  ```
-- **Lint com correção automática**
-  ```bash
-  npm run lint
-  ```
-- **Formatação**
-  ```bash
-  npm run format
-  ```
-
-## Deploy e Produção
-1. Configure as variáveis de ambiente (`DATABASE_URL`, e outras que desejar expor).
-2. Gere o build com `npm run build`.
-3. Execute `node dist/main.js` ou utilize um process manager (PM2, Docker, Kubernetes, etc.).
-
-Graças ao Prisma, o projeto se adapta facilmente a pipelines CI/CD, permitindo migrações controladas (`prisma migrate deploy`) e geração automática do client.
-
-## Recursos Adicionais
-- [Documentação do NestJS](https://docs.nestjs.com)
-- [Documentação do Prisma](https://www.prisma.io/docs)
-- [Referência do Apollo Server](https://www.apollographql.com/docs/apollo-server/)
-- [Documentação do PostgreSQL](https://www.postgresql.org/docs/)
-
----
-Sinta-se à vontade para adaptar este boilerplate às necessidades do seu time. Bons estudos e bons testes! 🚀
