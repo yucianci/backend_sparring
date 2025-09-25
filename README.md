@@ -35,8 +35,6 @@ Crie um arquivo `.env` na raiz do projeto com a string de conexão do banco:
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/backend_sparring?schema=public"
 ```
 
-> 💡 Em desenvolvimento local, é possível usar contêiner Docker para subir um PostgreSQL rapidamente.
-
 ## Pré-requisitos
 - Node.js 18 ou superior
 - npm 9 ou superior (ou outro gerenciador compatível, como pnpm ou yarn)
