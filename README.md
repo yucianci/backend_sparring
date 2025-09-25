@@ -1,99 +1,177 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Backend Sparring
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend Sparring é uma API GraphQL construída com Node.js e NestJS que utiliza TypeScript, Prisma ORM e PostgreSQL para oferecer uma base sólida de gestão de organizações aeronáuticas fictícias. O projeto foi pensado para servir como material de estudo e experimentação, demonstrando boas práticas de arquitetura, camadas bem definidas e integração com um banco relacional moderno.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Visão Geral da Aplicação
+- **API**: GraphQL exposta via Apollo Server, com _playground_ habilitado para facilitar inspeção e testes.
+- **Framework**: NestJS 10, explorando módulos, injeção de dependências, _providers_ e resolvers.
+- **ORM**: Prisma Client, responsável pelo acesso ao banco PostgreSQL e pela geração de tipos fortemente tipados.
+- **Banco de dados**: PostgreSQL, definido através do arquivo `prisma/schema.prisma` e configurado via variável `DATABASE_URL`.
+- **Domínio principal**: CRUD completo para entidades de **Organização**, incluindo campos de métricas operacionais e observações.
 
-## Description
+## Arquitetura e Organização do Código
+A estrutura segue os princípios modulares do NestJS:
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
+```
+src/
+├── main.ts                  # inicialização da aplicação Nest e configuração de CORS
+├── app.module.ts            # módulo raiz que agrega GraphQL, Prisma e módulos de domínio
+├── prisma/                  # módulo com o PrismaService (injeção do client e hooks de shutdown)
+└── organization/            # domínio principal com DTOs, entidade, service e resolver GraphQL
 ```
 
-## Compile and run the project
+- **`PrismaModule` / `PrismaService`**: encapsulam a criação e o ciclo de vida do Prisma Client, permitindo reuso em toda a aplicação.
+- **`OrganizationModule`**: agrupa o resolver GraphQL e o service que orquestra as operações de persistência.
+- **DTOs (`CreateOrganizationInput`, `UpdateOrganizationInput`)**: definem o formato dos dados aceitos nas mutações, garantindo validação em tempo de compilação.
+- **Entidade `Organization`**: espelha o modelo Prisma e define a forma como os dados são retornados no schema GraphQL.
 
-```bash
-# development
-$ npm run start
+## Modelo de Dados
+O arquivo [`prisma/schema.prisma`](prisma/schema.prisma) descreve a tabela `organizations`, incluindo colunas auxiliares de auditoria (`createdAt`, `updatedAt`, `deletedAt`). Sempre que o schema é alterado, basta rodar `npx prisma migrate dev --name <descricao>` para gerar e aplicar migrações.
 
-# watch mode
-$ npm run start:dev
+### Variáveis de Ambiente Obrigatórias
+Crie um arquivo `.env` na raiz do projeto com a string de conexão do banco:
 
-# production mode
-$ npm run start:prod
+```dotenv
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/backend_sparring?schema=public"
 ```
 
-## Run tests
+> 💡 Em desenvolvimento local, é possível usar contêiner Docker para subir um PostgreSQL rapidamente.
 
-```bash
-# unit tests
-$ npm run test
+## Pré-requisitos
+- Node.js 18 ou superior
+- npm 9 ou superior (ou outro gerenciador compatível, como pnpm ou yarn)
+- PostgreSQL acessível (local ou remoto)
 
-# e2e tests
-$ npm run test:e2e
+## Instalação e Configuração
+1. **Instalar dependências**
+   ```bash
+   npm install
+   ```
+2. **Gerar artefatos do Prisma (opcional em dev, mas recomendado)**
+   ```bash
+   npx prisma generate
+   ```
+3. **Executar migrações**
+   ```bash
+   npx prisma migrate dev
+   ```
+4. **(Opcional) Popular o banco** – ajuste `prisma/seed.ts` (quando existir) e rode `npx prisma db seed`.
 
-# test coverage
-$ npm run test:cov
+## Executando a Aplicação
+- **Modo desenvolvimento (hot reload)**
+  ```bash
+  npm run start:dev
+  ```
+- **Modo padrão**
+  ```bash
+  npm run start
+  ```
+- **Modo produção (usa build em `dist/`)**
+  ```bash
+  npm run build
+  npm run start:prod
+  ```
+
+A aplicação fica acessível em `http://localhost:3000/graphql`. O Apollo Sandbox/Playground permite executar queries e mutações diretamente do navegador.
+
+## Operações GraphQL Disponíveis
+### Criar organização
+```graphql
+mutation CreateOrganization {
+  createOrganization(
+    createOrganizationInput: {
+      name: "Galactic Air"
+      pilots: 12
+      flightHours: 3400
+      airships: 5
+      prompt: "Transportar equipes de manutenção"
+      securityObs: "Treinamento de segurança concluído"
+      generalObs: "Operação em expansão"
+    }
+  ) {
+    id
+    name
+    createdAt
+  }
+}
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g mau
-$ mau deploy
+### Listar organizações
+```graphql
+query GetOrganizations {
+  organizations {
+    id
+    name
+    pilots
+    flightHours
+  }
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Atualizar organização
+```graphql
+mutation UpdateOrganization {
+  updateOrganization(
+    updateOrganizationInput: {
+      id: "<UUID>"
+      pilots: 18
+      generalObs: "Operação internacional"
+    }
+  ) {
+    id
+    pilots
+    generalObs
+    updatedAt
+  }
+}
+```
 
-## Resources
+### Remover organização
+```graphql
+mutation DeleteOrganization {
+  removeOrganization(id: "<UUID>") {
+    id
+    name
+  }
+}
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+## Testes e Qualidade
+O projeto já vem configurado com Jest, ESLint e Prettier. Utilize os scripts abaixo:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- **Testes unitários**
+  ```bash
+  npm run test
+  ```
+- **Cobertura de testes**
+  ```bash
+  npm run test:cov
+  ```
+- **Testes end-to-end**
+  ```bash
+  npm run test:e2e
+  ```
+- **Lint com correção automática**
+  ```bash
+  npm run lint
+  ```
+- **Formatação**
+  ```bash
+  npm run format
+  ```
 
-## Support
+## Deploy e Produção
+1. Configure as variáveis de ambiente (`DATABASE_URL`, e outras que desejar expor).
+2. Gere o build com `npm run build`.
+3. Execute `node dist/main.js` ou utilize um process manager (PM2, Docker, Kubernetes, etc.).
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Graças ao Prisma, o projeto se adapta facilmente a pipelines CI/CD, permitindo migrações controladas (`prisma migrate deploy`) e geração automática do client.
 
-## Stay in touch
+## Recursos Adicionais
+- [Documentação do NestJS](https://docs.nestjs.com)
+- [Documentação do Prisma](https://www.prisma.io/docs)
+- [Referência do Apollo Server](https://www.apollographql.com/docs/apollo-server/)
+- [Documentação do PostgreSQL](https://www.postgresql.org/docs/)
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
+Sinta-se à vontade para adaptar este boilerplate às necessidades do seu time. Bons estudos e bons testes! 🚀
